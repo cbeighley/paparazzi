@@ -58,9 +58,13 @@ def read_log(ac_id, filename, sensor):
         m=re.match(pattern, line)
         if m:
             list_meas.append([float(m.group(2)), float(m.group(3)), float(m.group(4))])
+        #If matrix is too long take out elements
+        while len(list_meas) > 3000:
+            for i in range(1,len(list_meas),4):
+                if i>=len(list_meas):
+                    break;
+                list_meas.pop(i)
     return scipy.array(list_meas)
-
-
 
 #
 # select only non-noisy data

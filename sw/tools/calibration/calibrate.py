@@ -41,6 +41,8 @@ def main():
                       action="store", default="ACCEL")
     parser.add_option("-v", "--verbose",
                       action="store_true", dest="verbose")
+    parser.add_option("-p", "--plot",
+                      action="store_true", dest="plot")
     (options, args) = parser.parse_args()
     if len(args) != 1:
         parser.error("incorrect number of arguments")
@@ -57,18 +59,21 @@ def main():
     if options.verbose:
         print "reading file "+filename+" for aircraft "+options.ac_id+" and sensor "+options.sensor
     measurements = calibration_utils.read_log(options.ac_id, filename, options.sensor)
+    print len(measurements)
+#    while (len(measurements) > 3000):
+#        measurements = measurements(range(0,len(measurements),2))
     if options.verbose:
-       print "found "+str(len(measurements))+" records"
+        print "found "+str(len(measurements))+" records"
     if options.sensor == "ACCEL":
         sensor_ref = 9.81
         sensor_res = 10
-        noise_window = 20;
-        noise_threshold = 40;
+        noise_window = 30;
+        noise_threshold = 60;
     else: # MAG
         sensor_ref = 1.
         sensor_res = 11
-        noise_window = 10;
-        noise_threshold = 1000;
+        noise_window = 30;
+        noise_threshold = 10;
     flt_meas, flt_idx = calibration_utils.filter_meas(measurements, noise_window, noise_threshold)
     if options.verbose:
         print "remaining "+str(len(flt_meas))+" after low pass"
@@ -91,7 +96,8 @@ def main():
     calibration_utils.print_xml(p1, options.sensor, sensor_res)
     print ""
 
-    calibration_utils.plot_results(measurements, flt_idx, flt_meas, cp0, np0, cp1, np1, sensor_ref)
+    if options.plot:
+        calibration_utils.plot_results(measurements, flt_idx, flt_meas, cp0, np0, cp1, np1, sensor_ref)
 
 if __name__ == "__main__":
     main()

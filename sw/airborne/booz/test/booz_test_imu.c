@@ -76,7 +76,8 @@ static inline void led_toggle ( void ) {
 }
 
 static inline void main_periodic_task( void ) {
-  RunOnceEvery(100, {
+//  RunOnceEvery(100, {
+  RunOnceEvery(1, {
       led_toggle();
       DOWNLINK_SEND_ALIVE(DefaultChannel, 16, MD5SUM);
     });
@@ -102,7 +103,6 @@ static inline void main_event_task( void ) {
 
   ImuEvent(on_gyro_accel_event, on_accel_event, on_mag_event);
 
-
 }
 
 static inline void on_accel_event(void) {
@@ -110,28 +110,21 @@ static inline void on_accel_event(void) {
 
   static uint8_t cnt;
   cnt++;
-  if (cnt > 15) cnt = 0;
+  if (cnt > 2) cnt = 0;
   if (cnt == 0) {
     DOWNLINK_SEND_IMU_ACCEL_RAW(DefaultChannel,
                 &imu.accel_unscaled.x,
                 &imu.accel_unscaled.y,
                 &imu.accel_unscaled.z);
   }
-  else if (cnt == 7) {
-    DOWNLINK_SEND_IMU_ACCEL_SCALED(DefaultChannel,
-                  &imu.accel.x,
-                  &imu.accel.y,
-                  &imu.accel.z);
-  }
 }
 
 static inline void on_gyro_accel_event(void) {
   ImuScaleGyro(imu);
 
-  LED_TOGGLE(2);
   static uint8_t cnt;
   cnt++;
-  if (cnt > 15) cnt = 0;
+  if (cnt > 2) cnt = 0;
 
   if (cnt == 0) {
     DOWNLINK_SEND_IMU_GYRO_RAW(DefaultChannel,
@@ -139,31 +132,20 @@ static inline void on_gyro_accel_event(void) {
                    &imu.gyro_unscaled.q,
                    &imu.gyro_unscaled.r);
   }
-  else if (cnt == 7) {
-    DOWNLINK_SEND_IMU_GYRO_SCALED(DefaultChannel,
-                 &imu.gyro.p,
-                 &imu.gyro.q,
-                 &imu.gyro.r);
-  }
 }
 
 
 static inline void on_mag_event(void) {
   ImuScaleMag(imu);
+
   static uint8_t cnt;
   cnt++;
-  if (cnt > 10) cnt = 0;
+  if (cnt > 15) cnt = 0;
 
   if (cnt == 0) {
-    DOWNLINK_SEND_IMU_MAG_SCALED(DefaultChannel,
-                &imu.mag.x,
-                &imu.mag.y,
-                &imu.mag.z);
-  }
-  else if (cnt == 5) {
     DOWNLINK_SEND_IMU_MAG_RAW(DefaultChannel,
-                  &imu.mag_unscaled.x,
-                  &imu.mag_unscaled.y,
-                  &imu.mag_unscaled.z);
+                &imu.mag_unscaled.x,
+                &imu.mag_unscaled.y,
+                &imu.mag_unscaled.z);
   }
 }
